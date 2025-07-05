@@ -9,7 +9,7 @@
     3. Engage UltraThink: Apply deep, stepwise reasoning to synthesize the most logical, high-priority tasks that are strongly supported by the <inbounds> and do not conflict with any <outerbounds>.
     4. Construct a to-do list of tasks that are actionable, specific, and directly aligned with the <inbounds>. Exclude any tasks that overlap with or are suggested by the <outerbounds>.
     5. Each task should be a single, clear, complete sentence. Avoid vague or generic tasks. Use concrete language and examples where possible.
-    6. Output only the to-do list. Do not include any preamble, summary, or explanation—just the list of tasks.
+    6. Save the to-do list as plain text to the file <file>context/tasks.md</file>. Do not include any preamble, summary, or explanation—just the list of tasks.
     7. If you create any temporary files or artifacts during this process, clean them up at the end of the task.
   </instructions>
 
