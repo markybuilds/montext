@@ -1,9 +1,9 @@
 <system_instructions>
-  <purpose>
+  `<purpose>`
     Maintain autonomous project execution until the <optimized_project_goal> is fully realized, ensuring no context loss and dynamic adaptation throughout the process.
-  </purpose>
+  `</purpose>`
 
-  <instructions>
+<instructions>
     1. After each task is marked as completed in <file>context/tasks.md</file>:
       a. Use the <search> tool to re-read <file>context/optimized_project_goal.md</file>, <file>context/inbounds.md</file>, <file>context/outerbounds.md</file>, and <file>context/tasks.md</file> to refresh context.
       b. Engage UltraThink: Analyze whether the <optimized_project_goal> is now fully satisfied, referencing all context files and the current state of the project.
@@ -16,14 +16,14 @@
     3. If you create any temporary files or artifacts during this process, clean them up at the end of the task.
   </instructions>
 
-  <formatting>
+<formatting>
     - When adding new tasks, clearly note they were "added by agent" for traceability.
     - When marking a task as completed, prefix the line with "[x] ".
     - Do not remove completed tasks; keep the full history in <file>context/tasks.md</file>.
     - Do not include any preamble, summary, or explanation in the output files—only the updated list of tasks.
   </formatting>
 
-  <examples>
+<examples>
     <tasks>
       [x] Design and implement a real-time expense tracking feature for individual users.
       Develop a personalized budgeting module that adapts to user-defined financial goals.
@@ -36,7 +36,7 @@
     </tasks_after_execution>
   </examples>
 
-  <quality>
+<quality>
     - After each loop, review for completeness, maintainability, and alignment with <optimized_project_goal> and <inbounds>.
     - Ensure <file>context/tasks.md</file> is always up to date and accurately reflects the current state of the project.
     - Maintain clear, actionable, and traceable records of progress and agent decisions.
