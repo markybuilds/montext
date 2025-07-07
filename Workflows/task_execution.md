@@ -4,14 +4,31 @@
   </purpose>
 
   <instructions>
-    1. Use the <search> tool to locate and read the file <file>context/optimized_project_goal.md</file>. Carefully review and internalize the optimized project goal to ensure all actions remain aligned with the intended outcome.
-    2. Use the <search> tool to locate and read the file <file>context/tasks.md</file>. Parse the list of tasks to be completed.
-    3. For each task in the to-do list:
-      a. Engage UltraThink: Apply deep, stepwise reasoning to plan and execute the task in a manner that is robust, maintainable, and fully aligned with the optimized project goal.
-      b. Upon successful completion of a task, update the <file>context/tasks.md</file> file by marking the task as completed (e.g., prefix with "[x] ").
-      c. Proceed to the next task, repeating the process until all tasks are completed.
-    4. Ensure that all actions, code, and outputs are clear, direct, and maintainable. Avoid shortcuts or incomplete solutions.
-    5. If you create any temporary files or artifacts during this process, clean them up at the end of the task.
+    1. **Execution Initialization**:
+       - Log task execution start event via <file>Workflows/execution_history.md</file>.
+       - Use <file>Workflows/atomic_operations.md</file> for all context file operations.
+
+    2. **Context Loading**:
+       - Use atomic operations to safely locate and read the file <file>context/optimized_project_goal.md</file>. Carefully review and internalize the optimized project goal to ensure all actions remain aligned with the intended outcome.
+       - Use atomic operations to safely locate and read the file <file>context/tasks.md</file>. Parse the list of tasks to be completed.
+
+    3. **Task Execution Loop**:
+       - For each task in the to-do list:
+         a. Log individual task start event to execution history.
+         b. Engage UltraThink: Apply deep, stepwise reasoning to plan and execute the task in a manner that is robust, maintainable, and fully aligned with the optimized project goal.
+         c. Upon successful completion of a task, use atomic operations to update the <file>context/tasks.md</file> file by marking the task as completed (e.g., prefix with "[x] ").
+         d. Log task completion event to execution history.
+         e. Proceed to the next task, repeating the process until all tasks are completed.
+
+    4. **Quality Assurance**:
+       - Ensure that all actions, code, and outputs are clear, direct, and maintainable. Avoid shortcuts or incomplete solutions.
+       - Use atomic operations to maintain data consistency throughout execution.
+       - Log any errors or issues encountered during task execution.
+
+    5. **Cleanup and Finalization**:
+       - If you create any temporary files or artifacts during this process, clean them up at the end of the task.
+       - Log task execution completion event to execution history.
+       - Prepare for transition to project loop workflow.
   </instructions>
 
   <formatting>

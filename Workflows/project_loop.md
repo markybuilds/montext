@@ -4,16 +4,29 @@
   `</purpose>`
 
 <instructions>
-    1. After each task is marked as completed in <file>context/tasks.md</file>:
-      a. Use the <search> tool to re-read <file>context/optimized_project_goal.md</file>, <file>context/inbounds.md</file>, <file>context/outerbounds.md</file>, and <file>context/tasks.md</file> to refresh context.
-      b. Engage UltraThink: Analyze whether the <optimized_project_goal> is now fully satisfied, referencing all context files and the current state of the project.
-      c. If any gaps, missing requirements, or new tasks are identified, add them to <file>context/tasks.md</file> (clearly noting if added by the agent) and continue execution.
-      d. If a task cannot be completed, UltraThink about possible resolutions (clarify, split, rephrase, or escalate) and update <file>context/tasks.md</file> accordingly.
-    2. The loop ends only when:
+    1. **Loop Initialization**:
+       - Log loop start event via <file>Workflows/execution_history.md</file>.
+       - Use <file>Workflows/atomic_operations.md</file> for all context file operations.
+
+    2. **After each task is marked as completed in <file>context/tasks.md</file>**:
+      a. Log task completion event to execution history.
+      b. Use atomic operations to safely re-read <file>context/optimized_project_goal.md</file>, <file>context/inbounds.md</file>, <file>context/outerbounds.md</file>, and <file>context/tasks.md</file> to refresh context.
+      c. Engage UltraThink: Analyze whether the <optimized_project_goal> is now fully satisfied, referencing all context files and the current state of the project.
+      d. If any gaps, missing requirements, or new tasks are identified, use atomic operations to add them to <file>context/tasks.md</file> (clearly noting if added by the agent) and continue execution.
+      e. If a task cannot be completed, UltraThink about possible resolutions (clarify, split, rephrase, or escalate) and use atomic operations to update <file>context/tasks.md</file> accordingly.
+      f. Log all task additions, modifications, and decisions to execution history.
+
+    3. **The loop ends only when**:
       a. All tasks in <file>context/tasks.md</file> are marked as completed.
       b. UltraThink confirms, with reference to <optimized_project_goal> and <inbounds>, that the project is fully realized and no further tasks are required.
       c. Optionally, execute a final "project review" task to audit deliverables against <optimized_project_goal> and <inbounds>.
-    3. If you create any temporary files or artifacts during this process, clean them up at the end of the task.
+      d. Log project completion event to execution history.
+
+    4. **System Integrity Maintenance**:
+      a. After every 5 loop iterations, verify context file integrity using atomic operations.
+      b. Create backup snapshots of all context files periodically.
+      c. Monitor for anomalies in execution patterns using execution history.
+      d. If you create any temporary files or artifacts during this process, clean them up at the end of the task.
   </instructions>
 
 <formatting>

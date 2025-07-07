@@ -5,15 +5,28 @@
   </purpose>
 
   <instructions>
-    1. Receive a <project_goal> from the user. Before proceeding, engage UltraThink: deeply reflect on the <project_goal> from the perspective of what a successful, organized, fully functional, and easy-to-maintain codebase would look like at project completion. Use this perspective to fill in any gaps or ambiguities in the user's initial <project_goal>, ensuring your interpretation remains positively correlated to the user's intent and desired outcomes. The result of this process is the <optimized_project_goal>.
-    2. Analyze the <optimized_project_goal> in detail. Consider its intent, scope, and context. If needed, ask clarifying questions to ensure full understanding before proceeding.
-    3. Generate exactly 20 <inbound> statements. Each <inbound> must be a positively correlated, highly relevant, and desirable aspect of the <optimized_project_goal>. These should define what is inside the project's conceptual boundaries.
-    4. Generate exactly 20 <outerbound> statements. Each <outerbound> must be a negatively correlated, contextually misaligned, or explicitly undesirable aspect relative to the <optimized_project_goal>. These should define what is outside the project's conceptual boundaries.
-    5. Save the <inbound> statements to the file <file>context/inbounds.md</file> and the <outerbound> statements to <file>context/outerbounds.md</file>. Each statement should be on its own line, clearly written, and free of ambiguity.
-    6. Save the <optimized_project_goal> as plain text to the file <file>context/optimized_project_goal.md</file>.
-    7. Ensure your output is clear, direct, and actionable. Avoid vague or generic statements. Use concrete language and examples where possible.
-    8. Do not include any preamble, summary, or explanation in the output files—only the 20 statements per file.
-    9. If you create any temporary files or artifacts during this process, clean them up at the end of the task.
+    1. **Workflow Initialization**:
+       - Log boundaries workflow start event via <file>Workflows/execution_history.md</file>.
+
+    2. **Goal Optimization**:
+       - Receive a <project_goal> from the user. Before proceeding, engage UltraThink: deeply reflect on the <project_goal> from the perspective of what a successful, organized, fully functional, and easy-to-maintain codebase would look like at project completion. Use this perspective to fill in any gaps or ambiguities in the user's initial <project_goal>, ensuring your interpretation remains positively correlated to the user's intent and desired outcomes. The result of this process is the <optimized_project_goal>.
+       - Analyze the <optimized_project_goal> in detail. Consider its intent, scope, and context. If needed, ask clarifying questions to ensure full understanding before proceeding.
+
+    3. **Boundary Generation**:
+       - Generate exactly 20 <inbound> statements. Each <inbound> must be a positively correlated, highly relevant, and desirable aspect of the <optimized_project_goal>. These should define what is inside the project's conceptual boundaries.
+       - Generate exactly 20 <outerbound> statements. Each <outerbound> must be a negatively correlated, contextually misaligned, or explicitly undesirable aspect relative to the <optimized_project_goal>. These should define what is outside the project's conceptual boundaries.
+
+    4. **Atomic File Operations**:
+       - Use <file>Workflows/atomic_operations.md</file> to save the <inbound> statements to the file <file>context/inbounds.md</file> and the <outerbound> statements to <file>context/outerbounds.md</file>. Each statement should be on its own line, clearly written, and free of ambiguity.
+       - Use <file>Workflows/atomic_operations.md</file> to save the <optimized_project_goal> as plain text to the file <file>context/optimized_project_goal.md</file>.
+
+    5. **Quality Assurance**:
+       - Ensure your output is clear, direct, and actionable. Avoid vague or generic statements. Use concrete language and examples where possible.
+       - Do not include any preamble, summary, or explanation in the output files—only the 20 statements per file.
+
+    6. **Workflow Completion**:
+       - Log boundaries workflow completion event to execution history.
+       - If you create any temporary files or artifacts during this process, clean them up at the end of the task.
   </instructions>
 
   <formatting>

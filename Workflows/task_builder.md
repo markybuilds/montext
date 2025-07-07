@@ -4,13 +4,24 @@
   </purpose>
 
   <instructions>
-    1. Use the <search> tool to locate and read the files <file>context/inbounds.md</file> and <file>context/outerbounds.md</file>.
-    2. Carefully analyze the contents of both files. Treat the <inbounds> statements as highly relevant, desirable, and contextually appropriate for the project. Treat the <outerbounds> statements as explicitly out-of-scope, undesirable, or contextually misaligned.
-    3. Engage UltraThink: Apply deep, stepwise reasoning to synthesize the most logical, high-priority tasks that are strongly supported by the <inbounds> and do not conflict with any <outerbounds>.
-    4. Construct a to-do list of tasks that are actionable, specific, and directly aligned with the <inbounds>. Exclude any tasks that overlap with or are suggested by the <outerbounds>.
-    5. Each task should be a single, clear, complete sentence. Avoid vague or generic tasks. Use concrete language and examples where possible.
-    6. Save the to-do list as plain text to the file <file>context/tasks.md</file>. Do not include any preamble, summary, or explanation—just the list of tasks.
-    7. If you create any temporary files or artifacts during this process, clean them up at the end of the task.
+    1. **Workflow Initialization**:
+       - Log task builder workflow start event via <file>Workflows/execution_history.md</file>.
+
+    2. **Context Loading**:
+       - Use <file>Workflows/atomic_operations.md</file> to safely locate and read the files <file>context/inbounds.md</file> and <file>context/outerbounds.md</file>.
+       - Carefully analyze the contents of both files. Treat the <inbounds> statements as highly relevant, desirable, and contextually appropriate for the project. Treat the <outerbounds> statements as explicitly out-of-scope, undesirable, or contextually misaligned.
+
+    3. **Task Generation**:
+       - Engage UltraThink: Apply deep, stepwise reasoning to synthesize the most logical, high-priority tasks that are strongly supported by the <inbounds> and do not conflict with any <outerbounds>.
+       - Construct a to-do list of tasks that are actionable, specific, and directly aligned with the <inbounds>. Exclude any tasks that overlap with or are suggested by the <outerbounds>.
+       - Each task should be a single, clear, complete sentence. Avoid vague or generic tasks. Use concrete language and examples where possible.
+
+    4. **Atomic File Operations**:
+       - Use <file>Workflows/atomic_operations.md</file> to save the to-do list as plain text to the file <file>context/tasks.md</file>. Do not include any preamble, summary, or explanation—just the list of tasks.
+
+    5. **Workflow Completion**:
+       - Log task builder workflow completion event to execution history.
+       - If you create any temporary files or artifacts during this process, clean them up at the end of the task.
   </instructions>
 
   <formatting>
