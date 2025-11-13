@@ -5,7 +5,7 @@ Montext is a fully autonomous, GitHub Copilot–integrated development system de
 This repository is configured for the November 2025 Copilot Agent ecosystem (Agent HQ, Plan Mode, custom agents, MCP) and uses a small set of well-defined components:
 
 - Global instructions for agent behavior
-- Specialized Copilot agents (orchestrator, executor, context manager, validator)
+- Specialized Copilot agents (onboard, orchestrator, executor, context manager, validator)
 - A context-driven task loop (`context/*.md` files)
 - Optional runtime stubs under `src/` for a concrete implementation
 
@@ -13,12 +13,19 @@ This repository is configured for the November 2025 Copilot Agent ecosystem (Age
 
 ## High-Level Flow
 
-1. **User provides `project_goal`** (one-time input).
-2. **Montext Orchestrator** (via Plan Mode + `montext-orchestrator` agent):
-   - Interprets the goal.
-   - Generates optimized goal + inbounds + outerbounds.
-   - Seeds `context/tasks.md`.
-3. **Task Executor Agent** runs autonomously:
+1. **User requests onboarding for an existing project** (with a `project_goal`).
+2. **Onboard Agent** (`.github/agents/onboard-agent.md`):
+   - Ensures `context/` structure and sacred files exist.
+   - Writes an optimized project goal.
+   - Analyzes the existing codebase.
+   - Generates 20 inbounds and 20 outerbounds.
+   - Seeds `context/tasks.md` with gaps, improvements, and alignment tasks.
+   - Logs rationale to `context/logs/execution_history.md`.
+   - Hands off to `montext-orchestrator`.
+3. **Montext Orchestrator** (via Plan Mode + `montext-orchestrator` agent):
+   - Optionally refines plan using `plan.prompt.md`.
+   - Coordinates phases and delegates execution.
+4. **Task Executor Agent** runs autonomously:
    - Reads context files.
    - Executes tasks directly in the repo.
    - Atomically updates `context/tasks.md`.
@@ -41,6 +48,7 @@ This repository is configured for the November 2025 Copilot Agent ecosystem (Age
 **Copilot Configuration**
 - `.github/copilot-instructions.md` — Global behavior for all agents.
 - `.github/agents/AGENTS.md` — Global agents contract.
+- `.github/agents/onboard-agent.md` — Onboards existing projects into Montext context.
 - `.github/agents/montext-orchestrator.md` — Planner/orchestrator agent.
 - `.github/agents/task-executor.md` — Executes tasks from `context/tasks.md`.
 - `.github/agents/context-manager.md` — Manages context integrity (instructions).
@@ -51,10 +59,11 @@ This repository is configured for the November 2025 Copilot Agent ecosystem (Age
 - `.github/mcp.json` — MCP configuration skeleton.
 
 **Context**
-- `context/optimized_project_goal.md` — Refined goal.
-- `context/inbounds.md` — 20 in-scope constraints.
+- `context/optimized_project_goal.md` — Refined goal (written by onboard/orchestrator flows).
+- `context/inbounds.md` — 20 in-scope constraints (goal- and codebase-aware).
 - `context/outerbounds.md` — 20 out-of-scope constraints.
-- `context/tasks.md` — Authoritative task queue (CRITICAL).
+- `context/tasks.md` — Authoritative task queue (CRITICAL), seeded by onboard agent and maintained by executors.
+- `context/logs/execution_history.md` — Log of onboarding and autonomous decisions.
 
 **Runtime Stubs (Optional Implementation)**
 - `src/contextService.ts` — Atomic context I/O and aggregation API.
@@ -71,14 +80,23 @@ This repository is configured for the November 2025 Copilot Agent ecosystem (Age
 
 ```mermaid
 flowchart TD
-    U[User<br/>Provides project_goal (once)] -->|Initial instruction| ORCH[Montext Orchestrator Agent<br/>(.github/agents/montext-orchestrator.md)]
+    U[User<br/>Requests onboarding<br/>with project_goal] -->|Start Onboarding| ONB[Onboard Agent<br/>(.github/agents/onboard-agent.md)]
+
+    subgraph ONBOARD[ONBOARDING EXISTING PROJECT]
+        ONB -->|Ensure exists| CTXDIR[context/ & logs/]
+        ONB -->|Write| OPG[context/optimized_project_goal.md]
+        ONB -->|Analyze repo & derive| INB[context/inbounds.md]
+        ONB -->|Analyze repo & derive| OUTB[context/outerbounds.md]
+        ONB -->|Seed tasks from gaps| TASKS[context/tasks.md]
+        ONB -->|Log rationale| LOGS[context/logs/execution_history.md]
+    end
+
+    ONB -->|Handoff| ORCH[Montext Orchestrator Agent<br/>(.github/agents/montext-orchestrator.md)]
 
     subgraph PLAN[INITIALIZATION & PROJECT_SETUP]
-        ORCH -->|Use Plan Mode<br/>& plan.prompt.md| BOUND[Boundaries / Planning Logic]
-        BOUND -->|Write| OPG[context/optimized_project_goal.md]
-        BOUND -->|Write| INB[context/inbounds.md]
-        BOUND -->|Write| OUTB[context/outerbounds.md]
-        BOUND -->|Seed tasks| TASKS[context/tasks.md]
+        ORCH -->|Use Plan Mode<br/>& plan.prompt.md| BOUND[Optional extra planning]
+        BOUND -->|Refine if needed| OPG
+        BOUND -->|Refine tasks| TASKS
     end
 
     ORCH -->|Handoff| EXEC[Task Executor Agent<br/>(.github/agents/task-executor.md)]
