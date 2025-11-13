@@ -1,6 +1,6 @@
 Param(
     [string]$ProjectName = "my-montext-project",
-    [string]$RepoUrl = "https://github.com/markybuilds/montext-starter.git"
+    [string]$RepoUrl = "https://github.com/markybuilds/montext.git"
 )
 
 Write-Host "Montext Bootstrap (PowerShell)" -ForegroundColor Cyan
