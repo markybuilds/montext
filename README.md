@@ -1,159 +1,101 @@
-# Montext Autonomous System
+# Montext Autonomous Context System
 
-Montext is a fully autonomous, GitHub Copilot–integrated development system designed to take a single high-level project goal and drive it all the way to completion without requiring human intervention after initialization.
-
-This repository is configured for the November 2025 Copilot Agent ecosystem (Agent HQ, Plan Mode, custom agents, MCP) and uses a small set of well-defined components:
-
-- Global instructions for agent behavior
-- Specialized Copilot agents (onboard, orchestrator, executor, context manager, validator)
-- A context-driven task loop (`context/*.md` files)
-- Optional runtime stubs under `src/` for a concrete implementation
+A self-steering development workspace that uses GitHub Copilot Agents (onboard, orchestrator, executor, context manager, validator) plus Model Context Protocol (MCP) tools to move a single high-level goal all the way to completion. Once the goal is set, the agents collaborate through the `context/` directory to share intent, tasks, and historical notes.
 
 ---
 
-## High-Level Flow
-
-1. **User requests onboarding for an existing project** (with a `project_goal`).
-2. **Onboard Agent** (`.github/agents/onboard-agent.md`):
-   - Ensures `context/` structure and sacred files exist.
-   - Writes an optimized project goal.
-   - Analyzes the existing codebase.
-   - Generates 20 inbounds and 20 outerbounds.
-   - Seeds `context/tasks.md` with gaps, improvements, and alignment tasks.
-   - Logs rationale to `context/logs/execution_history.md`.
-   - Hands off to `montext-orchestrator`.
-3. **Montext Orchestrator** (via Plan Mode + `montext-orchestrator` agent):
-   - Optionally refines plan using `plan.prompt.md`.
-   - Coordinates phases and delegates execution.
-4. **Task Executor Agent** runs autonomously:
-   - Reads context files.
-   - Executes tasks directly in the repo.
-   - Atomically updates `context/tasks.md`.
-4. **Context Manager Agent** ensures integrity:
-   - Validates context files.
-   - Enforces atomic operations semantics (conceptually via `ContextService`).
-5. **Validator Agent**:
-   - Audits completed work.
-   - Adds corrective/follow-up tasks.
-6. Loop continues until goals (as defined in `optimized_project_goal.md` & `inbounds.md`) are met.
+## TL;DR
+- **Give Montext one clear project goal** and open the repo inside VS Code Insiders with Copilot Agents + MCP enabled.
+- **Onboard Agent** seeds `context/` with a refined goal, inbounds/outbounds, prioritized tasks, and a first log entry.
+- **Orchestrator Agent** coordinates planning and delegates tasks to **Task Executor**.
+- **Context Manager** protects `context/` integrity; **Validator** samples work and queues fixes.
+- Repeat the loop until all tasks in `context/tasks.md` are complete and the optimized goal is satisfied.
 
 ---
 
-## Key Files & Directories
-
-- `Montext.md` — Master orchestrator spec.
-- `montext_summary.md` — Developer-focused spec summarizing all instructions.
-- `Copilot-Agent-Montext-Guide.md` — Integration guide for Copilot Agents & VS Code Insiders.
-
-**Copilot Configuration**
-- `.github/copilot-instructions.md` — Global behavior for all agents.
-- `.github/agents/AGENTS.md` — Global agents contract.
-- `.github/agents/onboard-agent.md` — Onboards existing projects into Montext context.
-- `.github/agents/montext-orchestrator.md` — Planner/orchestrator agent.
-- `.github/agents/task-executor.md` — Executes tasks from `context/tasks.md`.
-- `.github/agents/context-manager.md` — Manages context integrity (instructions).
-- `.github/agents/validator.md` — Validates results and enqueues fixes.
-- `.github/prompts/plan.prompt.md` — Plan Mode prompt for setup.
-- `.github/prompts/execute.prompt.md` — Execution behavior prompt.
-- `.github/prompts/validate.prompt.md` — Validation behavior prompt.
-- `.github/mcp.json` — MCP configuration skeleton.
-
-**Context**
-- `context/optimized_project_goal.md` — Refined goal (written by onboard/orchestrator flows).
-- `context/inbounds.md` — 20 in-scope constraints (goal- and codebase-aware).
-- `context/outerbounds.md` — 20 out-of-scope constraints.
-- `context/tasks.md` — Authoritative task queue (CRITICAL), seeded by onboard agent and maintained by executors.
-- `context/logs/execution_history.md` — Log of onboarding and autonomous decisions.
-
-**Runtime Stubs (Optional Implementation)**
-- `src/contextService.ts` — Atomic context I/O and aggregation API.
-- `src/boundariesService.ts` — Generates goal/boundaries + seeds tasks.
-- `src/coreEngine.ts` — Implements the autonomous loop.
-- `src/montextOrchestrator.ts` — Wires everything; run with a `project_goal`.
-
-**VS Code**
-- `.vscode/settings.json` — Enables Copilot Agents, workspace context, nested agents, MCP.
+## Why It Exists
+| Problem | Montext Solution |
+| --- | --- |
+| Long onboarding time for existing repos | Automated onboarding agent that builds the context files for you. |
+| Agents lose track of project goals | `context/optimized_project_goal.md` keeps the refined target front-and-center. |
+| Scope creep | `context/inbounds.md` + `context/outerbounds.md` act as living guardrails. |
+| Chaotic task lists | `context/tasks.md` is the single queue shared by every agent. |
+| Missing traceability | `context/logs/execution_history.md` records every major decision. |
 
 ---
 
-## System Flow (Mermaid Diagram)
+## Quick Start
+1. **Open in VS Code Insiders** with Copilot Agents preview + MCP support.
+2. **Start the `montext-orchestrator` Copilot agent** and provide a `project_goal` (e.g., "Add telemetry to the core engine").
+3. **Let the onboarding flow finish**. It will generate/refresh all files under `context/`.
+4. **Track work in `context/tasks.md`**. Each task includes an owner, status, and the next step.
+5. **Let the Task Executor run**. It reads tasks, edits the repo, updates the task list, and logs results.
+6. **Validate**. Periodically trigger the validator agent (or allow scheduled runs) to audit the work and append corrective tasks.
 
+> 💡 Human edits should be rare. If you do change `context/` manually, keep the same structure and atomic update rules.
+
+---
+
+## Directory Map
+| Path | Purpose |
+| --- | --- |
+| `context/optimized_project_goal.md` | Refined, MCP-aware statement of the goal for all agents. |
+| `context/inbounds.md` | 20 scope items describing what *must* be covered. |
+| `context/outerbounds.md` | 20 exclusions to avoid scope creep. |
+| `context/tasks.md` | The prioritized queue. Each task is appended or updated atomically. |
+| `context/logs/execution_history.md` | Chronological log of onboarding + autonomous execution decisions. |
+| `src/contextService.ts` | Runtime stub that shows how atomic context reads/writes work. |
+| `src/boundariesService.ts` | Generates inbounds/outbounds/tasks from repo analysis. |
+| `src/coreEngine.ts` | Demonstrates the autonomous task loop. |
+| `src/montextOrchestrator.ts` | Wire-up entry point for supplying `project_goal`. |
+| `.github/agents/*.md` | Behavior contracts for each Copilot agent persona. |
+| `.github/prompts/*.md` | Prompts that power Plan/Execute/Validate modes. |
+
+---
+
+## Workflow Narrative
+1. **Kickoff** – Provide a `project_goal`. Onboard Agent ensures `context/` exists and writes the optimized goal, boundaries, tasks, and log entries.
+2. **Plan** – Orchestrator Agent reviews the new context, optionally runs Plan Mode, and may update the goal or tasks before delegating work.
+3. **Execute** – Task Executor chooses the top task, performs edits across the repo, and updates `context/tasks.md` + logs atomically.
+4. **Manage Context** – Context Manager checks that every change to `context/` is consistent, versioned, and reversible.
+5. **Validate** – Validator replays finished work, samples diffs, and adds remediation tasks when needed.
+6. **Complete** – When `context/tasks.md` has no pending items and the optimized goal is satisfied (per `inbounds.md`), the project is done.
+
+---
+
+## System Diagram (Mermaid)
 ```mermaid
 flowchart TD
-    U[User<br/>Requests onboarding<br/>with project_goal] -->|Start Onboarding| ONB[Onboard Agent<br/>(.github/agents/onboard-agent.md)]
-
-    subgraph ONBOARD[ONBOARDING EXISTING PROJECT]
-        ONB -->|Ensure exists| CTXDIR[context/ & logs/]
-        ONB -->|Write| OPG[context/optimized_project_goal.md]
-        ONB -->|Analyze repo & derive| INB[context/inbounds.md]
-        ONB -->|Analyze repo & derive| OUTB[context/outerbounds.md]
-        ONB -->|Seed tasks from gaps| TASKS[context/tasks.md]
-        ONB -->|Log rationale| LOGS[context/logs/execution_history.md]
-    end
-
-    ONB -->|Handoff| ORCH[Montext Orchestrator Agent<br/>(.github/agents/montext-orchestrator.md)]
-
-    subgraph PLAN[INITIALIZATION & PROJECT_SETUP]
-        ORCH -->|Use Plan Mode<br/>& plan.prompt.md| BOUND[Optional extra planning]
-        BOUND -->|Refine if needed| OPG
-        BOUND -->|Refine tasks| TASKS
-    end
-
-    ORCH -->|Handoff| EXEC[Task Executor Agent<br/>(.github/agents/task-executor.md)]
-
-    subgraph EXEC_LOOP[AUTONOMOUS_EXECUTION]
-        EXEC -->|Read
-                 optimized_project_goal.md,
-                 inbounds.md,
-                 outerbounds.md,
-                 tasks.md| DECIDE[Select Next Pending Task]
-
-        DECIDE -->|Implement change in repo| APPLY[Code / Docs / Config Changes]
-        APPLY -->|On success| UPDATE_TASKS[Update context/tasks.md atomically]
-
-        subgraph CTX[Context Manager Agent]
-            CTX -->|Validate & enforce| TASKS
-            CTX -->|Ensure atomic ops,
-                     backups, integrity| LOGS[(Execution History / Logs)]
-        end
-
-        UPDATE_TASKS --> CTX
-        UPDATE_TASKS --> LOOP_CHECK{Goal Satisfied?<br/>(vs optimized goal & inbounds)}
-
-        subgraph VAL[Validator Agent]
-            EXEC -->|When requested or periodically| VAL_RUN[Sample [x] tasks & outputs]
-            VAL_RUN -->|If issues| VAL_NEW[Append corrective tasks<br/>to context/tasks.md]
-            VAL_NEW --> TASKS
-        end
-
-        LOOP_CHECK -->|No| DECIDE
-        LOOP_CHECK -->|Yes| COMPLETE[Completion Excellence
-Generate final summary,
-confirm alignment,
-archive context]
-    end
-
-    COMPLETE --> DONE[Project Complete<br/>No further human input required]
+    U[User provides<br/>project_goal] --> ONB[Onboard Agent]
+    ONB -->|Seed context/| CTX[context directory]
+    CTX --> ORCH[Montext Orchestrator]
+    ORCH -->|Plan & delegate| EXEC[Task Executor]
+    EXEC -->|Update tasks + code| TASKS[(context/tasks.md)]
+    TASKS --> CMGR[Context Manager]
+    EXEC -->|Outputs| LOGS[(context/logs/execution_history.md)]
+    CMGR --> TASKS
+    EXEC --> VAL[Validator]
+    VAL -->|Queue fixes| TASKS
+    TASKS --> DONE{Goal met?}
+    DONE -->|No| EXEC
+    DONE -->|Yes| COMPLETE[Project Completed]
 ```
 
 ---
 
-## How to Use This Setup
+## Tips for Effective Use
+- **Keep instructions centralized**: If you need to update boundaries or goals, edit the corresponding `context/*.md` file so every agent sees the change immediately.
+- **Leverage MCP**: Connect any MCP servers in `.github/mcp.json` so agents can securely run code, inspect telemetry, or call internal tools.
+- **Log liberally**: Record non-obvious decisions in `context/logs/execution_history.md` for future agents.
+- **Review tasks before editing**: Always look at `context/tasks.md` to avoid duplicating work.
+- **Use validator feedback**: Treat validator-added tasks as high-priority bug fixes.
 
-1. **In VS Code Insiders with Copilot Agents enabled**:
-   - Open this repo.
-   - Start a Copilot Agent session using the `montext-orchestrator` agent.
-   - Provide a single high-level `project_goal`.
+---
 
-2. **The system should then**:
-   - Run planning (Plan Mode / plan prompt).
-   - Populate `context/` files and `context/tasks.md`.
-   - Let the `task-executor` agent iterate through tasks.
-   - Use `context-manager` semantics to keep state consistent.
-   - Use `validator` to refine results until done.
+## Need a Runtime?
+The repo ships with TypeScript stubs under `src/` that you can flesh out to run Montext without Copilot Agents:
+1. Implement the TODOs in `contextService`, `boundariesService`, and `coreEngine`.
+2. Use `montextOrchestrator.ts` to accept CLI input and call `run(project_goal)`.
+3. Hook in MCP-compatible tool adapters if you want to mirror the Copilot agent behavior programmatically.
 
-3. **Optional runtime**:
-   - Implement the TODOs in `src/contextService.ts`, `src/boundariesService.ts`, and `src/coreEngine.ts`.
-   - Create a small CLI or script that instantiates `MontextOrchestrator` and calls `run(project_goal)`.
-
-This README reflects the current system state and visually documents how Montext’s autonomous flow operates end-to-end.
+Once the runtime or agents finish the queue, archive `context/` along with `context/logs/execution_history.md` to preserve the provenance of the completed project.
