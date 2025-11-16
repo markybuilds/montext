@@ -1,0 +1,4 @@
+context/logs/mcp/*
+!context/logs/mcp/.gitkeep
+context/logs/codex/*
+!context/logs/codex/.gitkeep

@@ -1,13 +1,14 @@
 # Montext Autonomous System
 
-Montext is a fully autonomous, GitHub Copilot–integrated development system designed to take a single high-level project goal and drive it all the way to completion without requiring human intervention after initialization.
+Montext is a fully autonomous, OpenAI Codex–optimized development system designed to take a single high-level project goal and drive it all the way to completion without requiring human intervention after initialization.
 
-This repository is configured for the November 2025 Copilot Agent ecosystem (Agent HQ, Plan Mode, custom agents, MCP) and uses a small set of well-defined components:
+This repository is configured for the November 2025 Codex Extension + Codex CLI ecosystem (Agent / Chat approval modes, plan-first workflows, MCP-backed code execution) and uses a small set of well-defined components:
 
 - Global instructions for agent behavior
-- Specialized Copilot agents (onboard, orchestrator, executor, context manager, validator)
+- Specialized Codex agents (onboard, orchestrator, executor, context manager, validator)
 - A context-driven task loop (`context/*.md` files)
 - Optional runtime stubs under `src/` for a concrete implementation
+- MCP-aware code execution practices derived from Anthropic’s *Code execution with MCP* (Nov 4, 2025) to keep token usage low while scaling to many tools
 
 ---
 
@@ -41,12 +42,14 @@ This repository is configured for the November 2025 Copilot Agent ecosystem (Age
 
 ## Key Files & Directories
 
-- `Montext.md` — Master orchestrator spec.
-- `montext_summary.md` — Developer-focused spec summarizing all instructions.
-- `Copilot-Agent-Montext-Guide.md` — Integration guide for Copilot Agents & VS Code Insiders.
+- `system_documentation/Codex-Extension-Montext-Guide.md` — Integration guide for the Codex extension, Codex CLI, and MCP-backed workflows.
+- `codex/README.md` — Layout for Codex-specific scaffolding (`servers/`, `skills/`, `scripts/`).
+- `codex/servers/` — House MCP wrappers so Codex can import only the tools it needs per task (see `codex/servers/template/exampleTool.ts` for a starter pattern).
+- `codex/skills/` — Persistent helper scripts + `SKILL.md` manifests to reduce repeated reasoning (e.g., `codex/skills/save-handle` for storing MCP payloads).
+- `codex/scripts/` — Automation helpers (wrapper generation, cache pruning, Codex CLI sync).
 
-**Copilot Configuration**
-- `.github/copilot-instructions.md` — Global behavior for all agents.
+**Codex Configuration**
+- `scripts/montext-codex.sh` — Automation shell that drives agents via the Codex CLI.
 - `.github/agents/AGENTS.md` — Global agents contract.
 - `.github/agents/onboard-agent.md` — Onboards existing projects into Montext context.
 - `.github/agents/montext-orchestrator.md` — Planner/orchestrator agent.
@@ -56,7 +59,6 @@ This repository is configured for the November 2025 Copilot Agent ecosystem (Age
 - `.github/prompts/plan.prompt.md` — Plan Mode prompt for setup.
 - `.github/prompts/execute.prompt.md` — Execution behavior prompt.
 - `.github/prompts/validate.prompt.md` — Validation behavior prompt.
-- `.github/mcp.json` — MCP configuration skeleton.
 
 **Context**
 - `context/optimized_project_goal.md` — Refined goal (written by onboard/orchestrator flows).
@@ -64,6 +66,7 @@ This repository is configured for the November 2025 Copilot Agent ecosystem (Age
 - `context/outerbounds.md` — 20 out-of-scope constraints.
 - `context/tasks.md` — Authoritative task queue (CRITICAL), seeded by onboard agent and maintained by executors.
 - `context/logs/execution_history.md` — Log of onboarding and autonomous decisions.
+- `context/logs/mcp/` — Payload handles for large tool outputs (never share raw contents with the model).
 
 **Runtime Stubs (Optional Implementation)**
 - `src/contextService.ts` — Atomic context I/O and aggregation API.
@@ -72,7 +75,14 @@ This repository is configured for the November 2025 Copilot Agent ecosystem (Age
 - `src/montextOrchestrator.ts` — Wires everything; run with a `project_goal`.
 
 **VS Code**
-- `.vscode/settings.json` — Enables Copilot Agents, workspace context, nested agents, MCP.
+- `.vscode/settings.json` — Enables shared chat settings (nested agents, workspace context).
+- `.vscode/extensions.json` — Recommends the `openai.chatgpt` Codex extension for VS Code / Cursor / Windsurf.
+
+**Codex + MCP Code Execution**
+- Codex runs Montext inside VS Code, Cursor, or Windsurf with the `Agent` approval mode so the system can read/write files and execute commands locally, while escalating only when leaving the workspace (per OpenAI’s Codex IDE guide, Nov 2025).
+- MCP servers should be exposed as TypeScript modules rather than raw tool manifests to avoid flooding Codex’s context window. Generate a `codex/servers/<server>/<tool>.ts` tree that wraps MCP calls, then let the agent import just-in-time helpers (Anthropic, *Code execution with MCP*, Nov 4, 2025).
+- For large tool responses, persist opaque handles (e.g., hashed filenames) in `context/logs/` and teach Montext to share only the handle inside chats/tasks. When another MCP call needs the payload, resolve it inside the execution sandbox instead of re-tokenizing it through the model.
+- Encourage agents to persist reusable snippets under `codex/skills/` (plus `SKILL.md`) so Codex can grow a library of deterministic helpers without re-discovering patterns every session.
 
 ---
 
@@ -140,20 +150,27 @@ archive context]
 
 ## How to Use This Setup
 
-1. **In VS Code Insiders with Copilot Agents enabled**:
-   - Open this repo.
-   - Start a Copilot Agent session using the `montext-orchestrator` agent.
+1. **In VS Code / Cursor / Windsurf with the Codex extension installed** (`openai.chatgpt`):
+   - Sign in with the ChatGPT account tied to your Codex plan (per OpenAI’s Codex IDE extension guide, Nov 2025).
+   - Switch Codex to the `Agent` approval mode so it can read/write files and run commands inside this workspace without prompting.
+   - Start a Codex session that loads `.github/agents/montext-orchestrator.md` (Codex automatically surfaces nested agents when `chat.useNestedAgentsMdFiles` is on).
    - Provide a single high-level `project_goal`.
 
 2. **The system should then**:
-   - Run planning (Plan Mode / plan prompt).
-   - Populate `context/` files and `context/tasks.md`.
-   - Let the `task-executor` agent iterate through tasks.
-   - Use `context-manager` semantics to keep state consistent.
-   - Use `validator` to refine results until done.
+   - Run planning (`plan.prompt.md`) to refresh the optimized goal, boundaries, and `context/tasks.md`.
+   - Execute tasks via `task-executor` in the same workspace, leveraging MCP wrappers under `codex/servers/` to only load the tools that matter for the current step.
+   - Use the context manager semantics to keep state consistent and log high-volume tool data behind hashed handles in `context/logs/mcp/`.
+   - Call the validator periodically (or after completions) to append corrective tasks.
 
-3. **Optional runtime**:
+3. **Automated CLI option**:
+   - Install the [Codex CLI](https://github.com/openai/codex) and ensure the `codex` binary is on your `PATH`.
+   - Run `./scripts/montext-codex.sh --goal "Your project goal"` from the repo root.
+   - The script invokes the onboard, orchestrator, executor, and validator agents sequentially, looping until `context/tasks.md` has no unchecked tasks.
+   - Logs for each Codex run are stored under `context/logs/codex/`, and summaries are appended to `context/logs/execution_history.md`.
+
+4. **Optional runtime**:
    - Implement the TODOs in `src/contextService.ts`, `src/boundariesService.ts`, and `src/coreEngine.ts`.
    - Create a small CLI or script that instantiates `MontextOrchestrator` and calls `run(project_goal)`.
+   - Wire Codex CLI background sessions (cloud agent mode) to the same context structure if you want Codex to work asynchronously in OpenAI’s cloud.
 
-This README reflects the current system state and visually documents how Montext’s autonomous flow operates end-to-end.
+This README reflects the new Codex-first system state and visually documents how Montext’s autonomous flow operates end-to-end.

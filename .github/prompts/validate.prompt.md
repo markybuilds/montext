@@ -16,9 +16,11 @@ Verify that completed tasks and resulting artifacts align with the optimized pro
    - Functional correctness
    - Alignment with inbounds
    - No violations of outerbounds
+   - Proper use of `codex/servers/` wrappers and `codex/skills/` helpers where applicable
+   - MCP payloads referenced via `context/logs/mcp/` handles instead of inline text
    - Code quality and maintainability
 4. For any issues:
-   - Append new corrective tasks to `context/tasks.md` (do not overwrite history).
+   - Append new corrective tasks to `context/tasks.md` (do not overwrite history) and note them in `context/logs/execution_history.md`.
 
 ## Constraints
 - Do not ask the user what to validate.

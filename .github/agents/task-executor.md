@@ -4,6 +4,7 @@ description: Executes individual tasks from context/tasks.md.
 tools:
   - search
   - runSubagent
+  - shell
 handoffs:
   - label: Validate Results
     agent: validator-agent
@@ -17,5 +18,8 @@ handoffs:
 - Always read the latest `context/tasks.md`.
 - Pick the next actionable task; do not ask which one.
 - Implement changes directly in the repo using best practices.
-- After completion, atomically mark the task with `[x]` and log.
+- Reference files in Codex prompts via `@file` handles to minimize tokens.
+- Import helpers from `codex/servers/` or `codex/skills/` before writing new scripts.
+- Persist large MCP results to `context/logs/mcp/` and share handles rather than raw data.
+- After completion, atomically mark the task with `[x]` and log the operation (including any Codex approval-mode changes).
 - If blocked, decompose into smaller tasks and append them.

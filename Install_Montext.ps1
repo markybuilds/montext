@@ -70,8 +70,8 @@ Write-Host ""
 Write-Host "Montext system successfully bootstrapped in '$ProjectName'." -ForegroundColor Green
 Write-Host "" 
 Write-Host "Next steps:" -ForegroundColor Cyan
-Write-Host "1. Open '$ProjectName' in VS Code Insiders." 
-Write-Host "2. Ensure GitHub Copilot and Copilot Agents are enabled." 
+Write-Host "1. Open '$ProjectName' in VS Code / Cursor / Windsurf with the OpenAI Codex extension installed." 
+Write-Host "2. Sign in to Codex, switch to the Agent approval mode, and let it read the workspace instructions." 
 Write-Host "3. Use the Onboard Agent or Montext Orchestrator agent and provide your project goal." 
 Write-Host "4. Montext will initialize context and begin autonomous execution based on the starter setup." 
 Write-Host "" 

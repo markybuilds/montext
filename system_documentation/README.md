@@ -1,13 +1,14 @@
 # Montext Autonomous System
 
-Montext is a fully autonomous, GitHub Copilot–integrated development system designed to take a single high-level project goal and drive it all the way to completion without requiring human intervention after initialization.
+Montext is a fully autonomous, OpenAI Codex–optimized development system designed to take a single high-level project goal and drive it all the way to completion without requiring human intervention after initialization.
 
-This repository is configured for the November 2025 Copilot Agent ecosystem (Agent HQ, Plan Mode, custom agents, MCP) and uses a small set of well-defined components:
+This repository is configured for the November 2025 Codex Extension ecosystem (Agent + Chat approval modes, Codex CLI handoffs, MCP-aware execution) and uses a small set of well-defined components:
 
 - Global instructions for agent behavior
-- Specialized Copilot agents (orchestrator, executor, context manager, validator)
+- Specialized Codex agents (orchestrator, executor, context manager, validator)
 - A context-driven task loop (`context/*.md` files)
 - Optional runtime stubs under `src/` for a concrete implementation
+- MCP code-execution practices from Anthropic’s *Code execution with MCP* (Nov 4, 2025) so large tool graphs stay token-efficient
 
 ---
 
@@ -34,12 +35,14 @@ This repository is configured for the November 2025 Copilot Agent ecosystem (Age
 
 ## Key Files & Directories
 
-- `Montext.md` — Master orchestrator spec.
-- `montext_summary.md` — Developer-focused spec summarizing all instructions.
-- `Copilot-Agent-Montext-Guide.md` — Integration guide for Copilot Agents & VS Code Insiders.
+- `Codex-Extension-Montext-Guide.md` — Deep-dive on Codex extension setup, Codex CLI, and MCP best practices.
+- `../codex/README.md` — Codex scaffolding overview (`servers/`, `skills/`, `scripts/`).
+- `../codex/servers/` — MCP wrappers that Codex imports on demand (starter template in `codex/servers/template/exampleTool.ts`).
+- `../codex/skills/` — Persistent helper implementations with `SKILL.md` metadata (e.g., `codex/skills/save-handle/`).
+- `../codex/scripts/` — Scripts for wrapper generation, cache pruning, and Codex CLI sync.
+- `../scripts/montext-codex.sh` — Automation shell that drives Montext via the Codex CLI.
 
-**Copilot Configuration**
-- `.github/copilot-instructions.md` — Global behavior for all agents.
+**Codex Configuration**
 - `.github/agents/AGENTS.md` — Global agents contract.
 - `.github/agents/montext-orchestrator.md` — Planner/orchestrator agent.
 - `.github/agents/task-executor.md` — Executes tasks from `context/tasks.md`.
@@ -48,13 +51,14 @@ This repository is configured for the November 2025 Copilot Agent ecosystem (Age
 - `.github/prompts/plan.prompt.md` — Plan Mode prompt for setup.
 - `.github/prompts/execute.prompt.md` — Execution behavior prompt.
 - `.github/prompts/validate.prompt.md` — Validation behavior prompt.
-- `.github/mcp.json` — MCP configuration skeleton.
 
 **Context**
 - `context/optimized_project_goal.md` — Refined goal.
 - `context/inbounds.md` — 20 in-scope constraints.
 - `context/outerbounds.md` — 20 out-of-scope constraints.
 - `context/tasks.md` — Authoritative task queue (CRITICAL).
+- `context/logs/execution_history.md` — Agent rationale log.
+- `context/logs/mcp/` — Hashed payload handles for large tool responses.
 
 **Runtime Stubs (Optional Implementation)**
 - `src/contextService.ts` — Atomic context I/O and aggregation API.
@@ -63,7 +67,14 @@ This repository is configured for the November 2025 Copilot Agent ecosystem (Age
 - `src/montextOrchestrator.ts` — Wires everything; run with a `project_goal`.
 
 **VS Code**
-- `.vscode/settings.json` — Enables Copilot Agents, workspace context, nested agents, MCP.
+- `.vscode/settings.json` — Enables shared chat settings (nested agents, workspace context).
+- `.vscode/extensions.json` — Recommends `openai.chatgpt` so Codex is available wherever Montext runs.
+
+**Codex + MCP Execution Highlights**
+- Run Montext from Codex’s `Agent` approval mode so it can modify the repo and run terminal commands locally; escalate only when Codex needs network or cross-workspace access (per OpenAI Codex IDE docs, Nov 2025).
+- Represent MCP servers as importable modules so only the tools required for the active task are loaded, following Anthropic’s code-execution pattern of generating a `codex/servers/<name>/<tool>.ts` tree and lazily importing helpers.
+- Persist large tool responses as hashed handles inside `context/logs/mcp/` and hand the handle to subsequent MCP calls rather than re-tokenizing payloads through Codex.
+- Capture reusable logic under `codex/skills/<name>/` with a local `SKILL.md` so Codex can self-bootstrap higher-level workflows over time.
 
 ---
 
@@ -122,20 +133,23 @@ archive context]
 
 ## How to Use This Setup
 
-1. **In VS Code Insiders with Copilot Agents enabled**:
-   - Open this repo.
-   - Start a Copilot Agent session using the `montext-orchestrator` agent.
-   - Provide a single high-level `project_goal`.
+1. **In VS Code / Cursor / Windsurf with Codex installed**:
+   - Open this repo and make sure the Codex extension (`openai.chatgpt`) is active.
+   - Sign in with the ChatGPT account tied to Codex, then set the approval mode to `Agent` so Montext can operate hands-free.
+   - Launch the `montext-orchestrator` agent definition from `.github/agents/montext-orchestrator.md` and provide a single high-level `project_goal`.
 
 2. **The system should then**:
-   - Run planning (Plan Mode / plan prompt).
-   - Populate `context/` files and `context/tasks.md`.
-   - Let the `task-executor` agent iterate through tasks.
-   - Use `context-manager` semantics to keep state consistent.
-   - Use `validator` to refine results until done.
+   - Run planning (`plan.prompt.md`) to refresh the optimized goal, boundaries, and seeds for `context/tasks.md`.
+   - Execute tasks locally, leaning on MCP wrappers for tool access and the hashed-handle technique for large payloads.
+   - Keep context integrity via the context-manager semantics and schedule validator reviews to refine work.
 
-3. **Optional runtime**:
+3. **Automated CLI option**:
+   - Install the Codex CLI and run `./scripts/montext-codex.sh --goal "..."`.
+   - The script orchestrates onboard → plan → task execution → validation until no unchecked tasks remain.
+
+4. **Optional runtime**:
    - Implement the TODOs in `src/contextService.ts`, `src/boundariesService.ts`, and `src/coreEngine.ts`.
    - Create a small CLI or script that instantiates `MontextOrchestrator` and calls `run(project_goal)`.
+   - Attach Codex CLI background sessions if you want cloud-hosted execution to manipulate the same `context/` artifacts.
 
-This README reflects the current system state and visually documents how Montext’s autonomous flow operates end-to-end.
+This README reflects the Codex-first system state and visually documents how Montext’s autonomous flow operates end-to-end.

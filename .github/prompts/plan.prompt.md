@@ -11,8 +11,9 @@ Given an initial project goal, produce a clear, implementation-ready plan for th
 3. Draft:
    - 20 inbounds (in-scope success criteria).
    - 20 outerbounds (anti-goals / exclusions).
-4. Propose an initial task breakdown suitable for `context/tasks.md`.
-5. Output:
+4. Identify Codex workspace needs (skills to add, MCP wrappers to touch, scripts to run) and reflect them in the plan.
+5. Propose an initial task breakdown suitable for `context/tasks.md`.
+6. Output:
    - A Markdown section `## Montext Plan` for the human.
    - A machine-friendly checklist section `## Montext Tasks` (one task per line) that can be written into `context/tasks.md`.
 
@@ -20,3 +21,4 @@ Given an initial project goal, produce a clear, implementation-ready plan for th
 - Do not ask for permission.
 - Assume authority to make reasonable decisions.
 - Ensure all tasks are small, actionable, and can be completed autonomously.
+- When referencing large MCP data, store handles under `context/logs/mcp/` instead of embedding payloads in the plan.

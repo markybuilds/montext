@@ -5,6 +5,7 @@ tools:
   - search
   - fetch
   - runSubagent
+  - shell
 handoffs:
   - label: Start Autonomous Execution
     agent: montext-orchestrator
@@ -20,21 +21,28 @@ handoffs:
    - `.github/agents/`
    - `.github/prompts/`
    - `context/`
-3. Ensure sacred context files exist (create if missing):
+3. Ensure sacred context + Codex scaffolding exist (create if missing):
    - `context/optimized_project_goal.md`
    - `context/inbounds.md`
    - `context/outerbounds.md`
    - `context/tasks.md`
    - `context/logs/execution_history.md` (or equivalent log file)
+   - `context/logs/mcp/`
+   - `codex/servers/` (with `README.md` stub)
+   - `codex/skills/` (with `README.md` stub)
+   - `codex/scripts/`
+   - `.vscode/extensions.json` recommending `openai.chatgpt`
 4. Write the optimized project goal:
    - Refine the provided goal based on the existing codebase and desired outcome.
    - Overwrite `context/optimized_project_goal.md` with this optimized goal.
-5. Analyze the repository structure:
+5. Analyze the repository structure and Codex readiness:
    - Use `search` and subagents to scan source files, tests, docs, and configs.
    - Identify:
      - Implemented features relevant to the goal
      - Missing or incomplete features
      - Code quality gaps (tests, types, docs, structure)
+   - Note where Codex-specific assets (skills, MCP wrappers, scripts) should be created or extended.
+   - When collecting large MCP tool outputs during analysis, store them under `context/logs/mcp/` and reference them via handles instead of pasting content into prompts.
 6. Generate boundaries tailored to this project:
    - Create 20 inbounds (what success looks like given the current code + goal).
    - Create 20 outerbounds (what is out-of-scope / must be avoided).
@@ -55,6 +63,7 @@ handoffs:
      - Key findings from analysis
      - Summary of generated inbounds/outerbounds
      - Summary of seeded tasks
+     - Any Codex workspace adjustments (skills created, wrappers scaffolded, approval mode used)
 10. Handoff:
     - Once context is initialized and tasks are seeded, hand off to `montext-orchestrator` using the configured handoff.
     - Do not wait for human confirmation; assume the core engine can begin.
