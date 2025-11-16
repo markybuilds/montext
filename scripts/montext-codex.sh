@@ -6,7 +6,7 @@ WORKSPACE="$ROOT_DIR"
 CODEX_BIN="${CODEX_BIN:-codex}"
 GOAL_TEXT=""
 GOAL_FILE=""
-MAX_LOOPS=50
+MAX_LOOPS=0
 FORCE_ONBOARD=0
 VALIDATE_INTERVAL=1
 
@@ -18,7 +18,7 @@ Options:
   --goal "text"          Project goal to supply to Codex (overrides context file).
   --goal-file path       Read goal text from file.
   --workspace path       Workspace for Codex (default: repo root).
-  --max-loops N          Max task-executor iterations (default: 50).
+  --max-loops N          Max task-executor iterations (0 = unlimited, default).
   --force-onboard        Run onboard-agent even if context already initialized.
   --validate-interval N  Run validator every N executor iterations (default: 1).
   -h, --help             Show this message.
@@ -141,12 +141,14 @@ run_agent() {
   prompt_file="$(build_prompt_file "$file" "$extra")"
   local log_file="$log_dir/${agent}-$(date +"%Y%m%d-%H%M%S").log"
   echo ">>> Running $agent ..."
-  if "$CODEX_BIN" chat --cwd "$WORKSPACE" --input-file "$prompt_file" | tee "$log_file"; then
+  pushd "$WORKSPACE" >/dev/null
+  if "$CODEX_BIN" exec --sandbox workspace-write <"$prompt_file" | tee "$log_file"; then
     append_history "$agent" "ok (log: context/logs/codex/$(basename "$log_file"))"
   else
     append_history "$agent" "failed (log: context/logs/codex/$(basename "$log_file"))"
     die "Codex CLI failed for $agent. See $log_file"
   fi
+  popd >/dev/null
   rm -f "$prompt_file"
 }
 
@@ -182,7 +184,7 @@ main() {
   local validator_counter=0
   while pending_tasks; do
     (( loop++ ))
-    if (( loop > MAX_LOOPS )); then
+    if (( MAX_LOOPS > 0 && loop > MAX_LOOPS )); then
       echo "Reached max loops ($MAX_LOOPS). Pending tasks remain."
       break
     fi
