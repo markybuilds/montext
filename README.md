@@ -164,7 +164,8 @@ archive context]
 
 3. **Automated CLI option**:
    - Install the [Codex CLI](https://github.com/openai/codex) and ensure the `codex` binary is on your `PATH`.
-   - Run `./scripts/montext-codex.sh --goal "Your project goal"` from the repo root.
+   - Run the interactive wrapper `./scripts/run-montext.sh` (Bash) or `./scripts/run-montext.ps1` (PowerShell) and enter your project goal when prompted. Both wrappers call `montext-codex.sh` under the hood.
+   - Alternatively, invoke `./scripts/montext-codex.sh --goal "Your project goal"` directly for scripted/CI usage.
    - The script invokes the onboard, orchestrator, executor, and validator agents sequentially, looping until `context/tasks.md` has no unchecked tasks.
    - Logs for each Codex run are stored under `context/logs/codex/`, and summaries are appended to `context/logs/execution_history.md`.
 
@@ -172,5 +173,16 @@ archive context]
    - Implement the TODOs in `src/contextService.ts`, `src/boundariesService.ts`, and `src/coreEngine.ts`.
    - Create a small CLI or script that instantiates `MontextOrchestrator` and calls `run(project_goal)`.
    - Wire Codex CLI background sessions (cloud agent mode) to the same context structure if you want Codex to work asynchronously in OpenAI’s cloud.
+
+## Montext Realms — Browser RPG Demo
+
+Looking for a tangible example experience? Open `web/rpg/index.html` in any modern browser and explore a self-contained RPG prototype powered by Three.js (no build tooling required). The demo showcases:
+
+- Smooth WASD navigation with sprinting (Shift) and manual camera orbit (Q/E) anchored to the courier avatar.
+- Combat (Space to swing an energy blade), stamina + health bars, and a roaming guardian that can defeat or be defeated.
+- A mini quest: approach the Seer, collect three astral shards scattered around the valley, dispatch the guardian, then return for debrief.
+- Procedural scenery (terrain, crystals, obelisk, rocks) that renders instantly because every asset lives inside `web/rpg/`.
+
+Because it is pure static content, you can drag the folder into any static host or simply double-click the HTML file—perfect for showcasing Montext outputs inside the same repository.
 
 This README reflects the new Codex-first system state and visually documents how Montext’s autonomous flow operates end-to-end.

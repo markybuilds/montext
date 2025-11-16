@@ -21,3 +21,15 @@ Key flags:
 - `--max-loops 25` – limit task executor iterations.
 
 Logs are written to `context/logs/codex/`. Each agent run also appends a short note to `context/logs/execution_history.md`.
+
+## Quick-start wrappers
+
+- `run-montext.sh` — interactive Bash wrapper that prompts for a goal and (optionally) forces onboarding before calling `montext-codex.sh`.
+  ```bash
+  ./scripts/run-montext.sh
+  ```
+- `run-montext.ps1` — PowerShell equivalent, useful on Windows:
+  ```powershell
+  ./scripts/run-montext.ps1 -ForceOnboard
+  ```
+  Use `-CodexBin "C:\path\to\codex.exe"` if the CLI isn’t on your `PATH`.
